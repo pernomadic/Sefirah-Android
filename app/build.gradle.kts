@@ -48,6 +48,7 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES}"
             excludes += "META-INF/versions/**"
+            excludes += "META-INF/{LICENSE.md,LICENSE.txt,NOTICE.txt}"
         }
         jniLibs {
             useLegacyPackaging = true
