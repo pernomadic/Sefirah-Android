@@ -2,6 +2,7 @@ package com.castle.sefirah.presentation.sync
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,6 +17,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +54,8 @@ import sefirah.network.util.QrCodeParser
 import zxingcpp.BarcodeReader
 import java.util.concurrent.Executors
 
+private const val TAG = "QrCodeScanner"
+
 @Composable
 fun QrCodeScanner(
     rootNavController: NavHostController,
@@ -62,6 +66,7 @@ fun QrCodeScanner(
     val lifecycleOwner = LocalLifecycleOwner.current
     var hasCameraPermission by remember { mutableStateOf(false) }
     var permissionDenied by remember { mutableStateOf(false) }
+    var unrecognizedScan by remember { mutableStateOf<String?>(null) }
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -102,11 +107,30 @@ fun QrCodeScanner(
                             QrCodeParser.parseQrCode(qrCodeData)?.let { parsedData ->
                                 syncViewModel.showQrConnection(parsedData)
                                 rootNavController.popBackStack()
+                            } ?: run {
+                                val snippet = qrCodeData.take(60)
+                                if (unrecognizedScan != snippet) {
+                                    Log.w(TAG, "Unrecognized QR content: ${qrCodeData.take(120)}")
+                                    unrecognizedScan = snippet
+                                }
                             }
                         },
                         lifecycleOwner
                     )
                     QrCodeScanningOverlay()
+                    unrecognizedScan?.let { snippet ->
+                        Text(
+                            text = "Not a PC Control pairing code: $snippet",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxSize()
+                                .padding(24.dp)
+                                .wrapContentHeight(Alignment.Bottom)
+                        )
+                    }
                 }
             }
         }

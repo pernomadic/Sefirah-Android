@@ -23,6 +23,7 @@ object QrCodeParser {
 
     fun parsePairDeepLink(uri: Uri): QrCodeConnectionData? {
         if (uri.scheme != SCHEME || uri.host != PAIR_HOST) {
+            Log.d(TAG, "Ignoring code with unexpected scheme/host: scheme=${uri.scheme} host=${uri.host}")
             return null
         }
 
