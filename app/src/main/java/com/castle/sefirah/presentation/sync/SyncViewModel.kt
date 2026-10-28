@@ -42,6 +42,13 @@ class SyncViewModel @Inject constructor(
     private val _pendingQrConnection = MutableStateFlow<QrCodeConnectionData?>(null)
     val pendingQrConnection: StateFlow<QrCodeConnectionData?> = _pendingQrConnection.asStateFlow()
 
+    private val _pairingError = MutableStateFlow<String?>(null)
+    val pairingError: StateFlow<String?> = _pairingError.asStateFlow()
+
+    fun clearPairingError() {
+        _pairingError.value = null
+    }
+
     fun showQrConnection(connectionData: QrCodeConnectionData) {
         _pendingQrConnection.value = connectionData
     }
@@ -110,10 +117,16 @@ class SyncViewModel @Inject constructor(
                     networkManager.connectTo(connectionDetails)
                 }
 
-                val device = discoveredDevices.value[connectionDetails.deviceId] ?: return@launch
+                val device = discoveredDevices.value[connectionDetails.deviceId]
+                if (device == null) {
+                    Log.e(TAG, "Pairing: device not discovered after connectTo — TCP/TLS/auth failed")
+                    _pairingError.value = "Pairing failed: could not reach the PC. Is PC Control running?"
+                    return@launch
+                }
                 pair(device, rootNavController)
             } catch (e: Exception) {
                 Log.e(TAG, "Error connecting from QR code", e)
+                _pairingError.value = "Pairing failed: ${e.message ?: e.javaClass.simpleName}"
             }
         }
     }

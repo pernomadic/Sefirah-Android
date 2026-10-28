@@ -3,6 +3,7 @@ package com.castle.sefirah
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
@@ -54,8 +57,17 @@ class MainActivity : ComponentActivity() {
             SefirahTheme {
                 val pendingApproval by viewModel.pendingDeviceApproval.collectAsState()
                 val pendingQrConnection by syncViewModel.pendingQrConnection.collectAsState()
+                val pairingError by syncViewModel.pairingError.collectAsState()
                 val navController = rememberNavController()
                 val hasCompletedOnboarding = viewModel.startDestination != OnboardingRoute.OnboardingScreen.route
+
+                val toastContext = LocalContext.current
+                LaunchedEffect(pairingError) {
+                    pairingError?.let { message ->
+                        Toast.makeText(toastContext, message, Toast.LENGTH_LONG).show()
+                        syncViewModel.clearPairingError()
+                    }
+                }
 
                 Box(
                     modifier = Modifier
