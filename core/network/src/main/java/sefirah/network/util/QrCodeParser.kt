@@ -9,7 +9,7 @@ import androidx.core.net.toUri
 
 object QrCodeParser {
     private const val TAG = "QrCodeParser"
-    const val SCHEME = "sefirah"
+    const val SCHEME = "pccontrol"
     const val PAIR_HOST = "pair"
     const val DATA_QUERY_KEY = "data"
 

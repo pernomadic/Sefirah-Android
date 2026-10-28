@@ -14,7 +14,7 @@ android {
 
 
     defaultConfig {
-        applicationId = "com.castle.sefirah"
+        applicationId = "com.pernomadic.pccontrol"
 
         versionCode = 38
         versionName = "3.2.0"
